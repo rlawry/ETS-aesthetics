@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maximum Aesthetic Value Game</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #fce1ff, #e0f4ff);
+            color: #2b1b3f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .game {
+            position: relative; /* needed for overlay positioning */
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 24px 28px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 16px 35px rgba(180, 132, 255, 0.35);
+            border: 2px solid #ffd6e0;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: clamp(1.1rem, 3.2vw, 1.4rem);
+            line-height: 1.2;
+            text-align: center;
+            max-width: 100%;
+            overflow-wrap: break-word;
+            color: #6b21a8;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #7c7c9a;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            text-align: center;
+            color: #433264;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        button.option-btn {
+            background: #ffe6a7;
+            color: #3d2b43;
+            border: 2px solid #ffb4a2;
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: left;
+            transition: transform 0.07s ease, background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+            min-height: 48px;
+            box-shadow: 0 3px 0 rgba(255, 132, 124, 0.6);
+        }
+
+        button.option-btn:hover:not(:disabled) {
+            background: #ffd166;
+            border-color: #ff8fab;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 rgba(255, 132, 124, 0.7);
+        }
+
+        button.option-btn:disabled {
+            opacity: 0.6;
+            cursor: default;
+            box-shadow: 0 2px 0 rgba(200, 200, 200, 0.6);
+        }
+
+        .feedback {
+            min-height: 24px;
+            font-size: 0.98rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback.correct {
+            color: #2a9d8f;
+        }
+
+        .feedback.wrong {
+            color: #e76f51;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+            font-size: 0.98rem;
+            color: #4b3f72;
+        }
+
+        .emoji {
+            font-size: 1.7rem;
+            min-width: 1.7rem;
+            text-align: right;
+        }
+
+        #nextBtn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 2px solid #a06cd5;
+            background: #cdb4ff;
+            color: #2b1b3f;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background 0.12s ease, transform 0.07s ease, box-shadow 0.12s ease;
+            box-shadow: 0 4px 0 rgba(160, 108, 213, 0.6);
+        }
+
+        #nextBtn:hover:not(:disabled) {
+            background: #b197fc;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 0 rgba(160, 108, 213, 0.7);
+        }
+
+        #nextBtn:disabled {
+            opacity: 0.5;
+            cursor: default;
+            box-shadow: 0 2px 0 rgba(200, 200, 200, 0.6);
+        }
+
+        /* Overlay score flash */
+        .score-overlay {
+            position: absolute;
+            left: 50%;
+            top: 40%;
+            transform: translate(-50%, -50%) scale(0.7);
+            font-size: 2.6rem;
+            font-weight: 800;
+            pointer-events: none;
+            opacity: 0;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+            z-index: 20;
+        }
+
+        .score-overlay.positive {
+            color: #16a34a;
+        }
+
+        .score-overlay.negative {
+            color: #dc2626;
+        }
+
+        .score-overlay.show {
+            animation: scoreFlash 0.9s ease-out forwards;
+        }
+
+        @keyframes scoreFlash {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.6);
+            }
+            15% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+            60% {
+                opacity: 0.95;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game">
+        <h1>Earth and Space Science Graduation Requirement Quiz</h1>
+        <div class="subtitle">
+            Choose the scientifically correct answer.
+        </div>
+
+        <div class="question">Which Earth and Space Science thing has maximum aesthetic value?</div>
+
+        <div class="options">
+            <button class="option-btn"></button>
+            <button class="option-btn"></button>
+            <button class="option-btn"></button>
+            <button class="option-btn"></button>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+
+        <div class="score-row">
+            <div id="score">Social Credit Score: 0</div>
+            <div id="emoji" class="emoji"></div>
+        </div>
+
+        <button id="nextBtn" disabled>Next Earth and Space Science Question</button>
+
+        <!-- overlay for score delta -->
+        <div id="scoreOverlay" class="score-overlay"></div>
+    </div>
+
+    <script>
+        // Each option now has a fixed "aestheticScore".
+        // Higher score = higher aesthetic value.
+        const allOptions = [
+            // High-impact / low-sustainability settings
+            { label: "Expanding open-pit metal mine", aestheticScore: 10 },
+            { label: "Clear-cut hillside above a town", aestheticScore: 20 },
+            { label: "Channelized concrete stormwater ditch", aestheticScore: 30 },
+            { label: "Oversized asphalt parking lot at noon", aestheticScore: 40 },
+            { label: "Smog layer trapped over a city", aestheticScore: 50 },
+            { label: "Eroding farm field with bare soil", aestheticScore: 60 },
+            { label: "Landfill capped with plastic liners", aestheticScore: 70 },
+            { label: "Straightened leveed river with no floodplain", aestheticScore: 80 },
+            { label: "Coastal neighborhood armored with tall seawalls", aestheticScore: 90 },
+            { label: "Large monoculture cornfield with few hedgerows", aestheticScore: 100 },
+
+            // Mixed-impact, transitional designs
+            { label: "Conventional dam and reservoir on a major river", aestheticScore: 110 },
+            { label: "Suburban neighborhood with scattered street trees", aestheticScore: 120 },
+            { label: "Gravel quarry with settling ponds", aestheticScore: 130 },
+            { label: "Wind farm replacing diverse grassland habitat", aestheticScore: 140 },
+            { label: "Utility-scale solar array on former farmland", aestheticScore: 150 },
+            { label: "New highway interchange over former wetlands", aestheticScore: 160 },
+
+            // Mitigation, adaptation, and nature-based solutions
+            { label: "Tree-lined urban boulevard with bike lanes", aestheticScore: 170 },
+            { label: "Green schoolyard with mixed vegetation and permeable paths", aestheticScore: 180 },
+            { label: "Urban block with multiple green roofs", aestheticScore: 190 },
+            { label: "City park restored on a former rail yard", aestheticScore: 200 },
+            { label: "Floodplain park that can safely store floodwater", aestheticScore: 210 },
+            { label: "Restored riparian buffer along a meandering stream", aestheticScore: 220 },
+            { label: "Terraced hillside farms that limit erosion", aestheticScore: 230 },
+            { label: "Community rain gardens capturing neighborhood runoff", aestheticScore: 240 },
+            { label: "Constructed wetland polishing treated wastewater", aestheticScore: 250 },
+            { label: "Living shoreline with marsh plants and oyster reefs", aestheticScore: 260 },
+            { label: "Reconnected tidal wetland behind removed dikes", aestheticScore: 270 },
+            { label: "Mixed-use neighborhood designed as a 15-minute city", aestheticScore: 280 },
+            { label: "Urban forest canopy shading most of a neighborhood", aestheticScore: 290 },
+            { label: "Agroforestry system mixing crops and trees", aestheticScore: 300 },
+            { label: "Managed-retreat coastline turned into public open space", aestheticScore: 310 },
+            { label: "Integrated transit hub reducing car dependence", aestheticScore: 320 },
+            { label: "Community microgrid with rooftop solar and batteries", aestheticScore: 330 },
+            { label: "Watershed-scale restoration reconnecting rivers and wetlands", aestheticScore: 340 },
+            { label: "Region-wide network of wildlife corridors crossing roads", aestheticScore: 350 },
+            { label: "Climate-resilient city designed with nature-based solutions", aestheticScore: 360 }
+        ];
+
+        const correctMessages = [
+            "You sure know your ETS!",
+            "It's not subjective, it's SCIENCE!",
+            "That's using your SEPs!",
+            "That's so aesthetic!",
+            "Your engineering aesthetics score increases!",
+            "Well done, future scientist!",
+            "You're a true connoisseur of aesthetics!",
+            "Your science taste is impeccable!",
+            "Science and aesthetics go hand in hand!",
+            "You've mastered the art of aesthetics!"
+        ];
+
+        const wrongMessages = [
+            "That wasn't subjectively correct.",
+            "There was a more aesthetic choice.",
+            "That engineering needs more aesthetics.",
+            "Better luck next time, scientist!",
+            "That's not very aesthetic of you.",
+            "Science is about facts, not feelings!",
+            "Aesthetic value is quantifiable!",
+            "You can judge aesthetics better than that!",
+            "Keep trying, future scientist!",
+            "Don't let aesthetics fool you!"
+        ];
+
+        const optionButtons = Array.from(document.querySelectorAll(".option-btn"));
+        const feedbackEl = document.getElementById("feedback");
+        const scoreEl = document.getElementById("score");
+        const emojiEl = document.getElementById("emoji");
+        const nextBtn = document.getElementById("nextBtn");
+        const scoreOverlay = document.getElementById("scoreOverlay");
+
+        let socialCredit = 0;
+        let questionActive = true;
+        let currentChoices = [];
+
+        // Preload audio for correct and wrong messages
+        const correctAudio = [];
+        const wrongAudio = [];
+
+        for (let i = 1; i <= 10; i++) {
+            correctAudio.push(new Audio(`correct${i}.mp3`));
+            wrongAudio.push(new Audio(`wrong${i}.mp3`));
+        }
+
+        let currentAudio = null;
+
+        function playAudio(audio) {
+            try {
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+                currentAudio = audio;
+                currentAudio.currentTime = 0;
+                currentAudio.play();
+            } catch (e) {
+                // ignore autoplay restrictions
+            }
+        }
+
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function randomIndex(list) {
+            return Math.floor(Math.random() * list.length);
+        }
+
+        function updateEmoji() {
+            if (socialCredit < 0) {
+                emojiEl.textContent = "😞";
+            } else if (socialCredit > 1000) {
+                emojiEl.textContent = "🏆";
+            } else {
+                emojiEl.textContent = "";
+            }
+        }
+
+        function updateScoreDisplay() {
+            scoreEl.textContent = "Social Credit Score: " + socialCredit;
+            updateEmoji();
+        }
+
+        function setButtonsDisabled(disabled) {
+            optionButtons.forEach(btn => {
+                btn.disabled = disabled;
+            });
+        }
+
+        function newQuestion() {
+            questionActive = true;
+            feedbackEl.textContent = "";
+            feedbackEl.className = "feedback";
+            nextBtn.disabled = true;
+
+            const choices = shuffle(allOptions).slice(0, 4);
+            currentChoices = choices;
+
+            const highestScore = Math.max(...choices.map(c => c.aestheticScore));
+
+            optionButtons.forEach((btn, index) => {
+                const choice = choices[index];
+                btn.textContent = choice.label;
+                btn.dataset.isCorrect = (choice.aestheticScore === highestScore).toString();
+                btn.disabled = false;
+            });
+        }
+
+        function showScoreOverlay(delta) {
+            if (!scoreOverlay) return;
+            const sign = delta > 0 ? "+" : "";
+            scoreOverlay.textContent = `${sign}${delta}`;
+            scoreOverlay.classList.remove("positive", "negative", "show");
+
+            if (delta >= 0) {
+                scoreOverlay.classList.add("positive");
+            } else {
+                scoreOverlay.classList.add("negative");
+            }
+
+            // Force reflow so animation restarts
+            void scoreOverlay.offsetWidth;
+            scoreOverlay.classList.add("show");
+        }
+
+        optionButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                if (!questionActive || btn.disabled) return;
+
+                questionActive = false;
+                setButtonsDisabled(true);
+                nextBtn.disabled = false;
+
+                const chosenIndex = optionButtons.indexOf(btn);
+                const chosenChoice = currentChoices[chosenIndex];
+
+                if (!chosenChoice) {
+                    feedbackEl.textContent = "Scoring error – no choice data.";
+                    feedbackEl.className = "feedback wrong";
+                    return;
+                }
+
+                const scores = currentChoices.map(c => c.aestheticScore);
+                const maxScore = Math.max(...scores);
+                const minScore = Math.min(...scores);
+                const range = Math.max(1, maxScore - minScore);
+
+                const diffNorm = (maxScore - chosenChoice.aestheticScore) / range; // 0 (best) to 1 (worst)
+                let delta;
+
+                if (diffNorm === 0) {
+                    delta = 100;     // best
+                } else if (diffNorm <= 0.25) {
+                    delta = 40;      // very close to best
+                } else if (diffNorm <= 0.5) {
+                    delta = 10;      // somewhat below best
+                } else if (diffNorm <= 0.75) {
+                    delta = -50;     // clearly worse
+                } else {
+                    delta = -150;    // worst
+                }
+
+                socialCredit += delta;
+                showScoreOverlay(delta);
+
+                if (delta > 0) {
+                    const idx = randomIndex(correctMessages);
+                    feedbackEl.textContent = correctMessages[idx];
+                    feedbackEl.className = "feedback correct";
+                    playAudio(correctAudio[idx]);
+                } else if (delta < 0) {
+                    const idx = randomIndex(wrongMessages);
+                    feedbackEl.textContent = wrongMessages[idx];
+                    feedbackEl.className = "feedback wrong";
+                    playAudio(wrongAudio[idx]);
+                } else {
+                    feedbackEl.textContent = "Perfectly neutral choice. Net-zero aesthetics.";
+                    feedbackEl.className = "feedback";
+                }
+
+                updateScoreDisplay();
+            });
+        });
+
+        nextBtn.addEventListener("click", () => {
+            newQuestion();
+        });
+
+        updateScoreDisplay();
+        newQuestion();
+    </script>
+</body>
+
+</html>
