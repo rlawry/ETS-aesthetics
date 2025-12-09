@@ -17,7 +17,8 @@
         }
 
         .game {
-            position: relative; /* needed for overlay positioning */
+            position: relative;
+            /* needed for overlay positioning */
             background: rgba(255, 255, 255, 0.95);
             border-radius: 16px;
             padding: 24px 28px;
@@ -173,14 +174,17 @@
                 opacity: 0;
                 transform: translate(-50%, -50%) scale(0.6);
             }
+
             15% {
                 opacity: 1;
                 transform: translate(-50%, -50%) scale(1.15);
             }
+
             60% {
                 opacity: 0.95;
                 transform: translate(-50%, -50%) scale(1);
             }
+
             100% {
                 opacity: 0;
                 transform: translate(-50%, -50%) scale(0.9);
@@ -208,7 +212,7 @@
         <div id="feedback" class="feedback"></div>
 
         <div class="score-row">
-            <div id="score">HS-ESS-ETS Score: 0</div>
+            <div id="score">HS-ESS Aesthetic Score: 0</div>
             <div id="emoji" class="emoji"></div>
         </div>
 
@@ -275,7 +279,9 @@
             "You're a true connoisseur of aesthetics!",
             "Your science taste is impeccable!",
             "Science and aesthetics go hand in hand!",
-            "You've mastered the art of aesthetics!"
+            "You've mastered the art of aesthetics!",
+            "Science sure is pretty!",
+            "Pretty awesome!"
         ];
 
         const wrongMessages = [
@@ -288,7 +294,9 @@
             "Aesthetic value is quantifiable!",
             "You can judge aesthetics better than that!",
             "Keep trying, future scientist!",
-            "Don't let aesthetics fool you!"
+            "Don't let aesthetics fool you!",
+            "That was an unaesthetic choice.",
+            "Please consider updating your subjective settings."
         ];
 
         const optionButtons = Array.from(document.querySelectorAll(".option-btn"));
@@ -298,15 +306,18 @@
         const nextBtn = document.getElementById("nextBtn");
         const scoreOverlay = document.getElementById("scoreOverlay");
 
-        let socialCredit = 0;
+        let gameScore = 0;
         let questionActive = true;
         let currentChoices = [];
+
+        let lastCorrectIndex = -1;
+        let lastWrongIndex = -1;
 
         // Preload audio for correct and wrong messages
         const correctAudio = [];
         const wrongAudio = [];
 
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= 12; i++) {
             correctAudio.push(new Audio(`correct${i}.mp3`));
             wrongAudio.push(new Audio(`wrong${i}.mp3`));
         }
@@ -336,14 +347,19 @@
             return arr;
         }
 
-        function randomIndex(list) {
-            return Math.floor(Math.random() * list.length);
+        function randomIndex(list, lastIndex) {
+            if (list.length <= 1) return 0; // nothing to avoid
+            let idx;
+            do {
+                idx = Math.floor(Math.random() * list.length);
+            } while (idx === lastIndex);
+            return idx;
         }
 
         function updateEmoji() {
-            if (socialCredit < 0) {
+            if (gameScore < 0) {
                 emojiEl.textContent = "😞";
-            } else if (socialCredit > 1000) {
+            } else if (gameScore > 1000) {
                 emojiEl.textContent = "🏆";
             } else {
                 emojiEl.textContent = "";
@@ -351,7 +367,7 @@
         }
 
         function updateScoreDisplay() {
-            scoreEl.textContent = "HS-ESS-ETS Score: " + socialCredit;
+            scoreEl.textContent = "HS-ESS Aesthetic Score: " + gameScore;
             updateEmoji();
         }
 
@@ -434,16 +450,18 @@
                     delta = -150;    // worst
                 }
 
-                socialCredit += delta;
+                gameScore += delta;
                 showScoreOverlay(delta);
 
                 if (delta > 0) {
-                    const idx = randomIndex(correctMessages);
+                    const idx = randomIndex(correctMessages, lastCorrectIndex);
+                    lastCorrectIndex = idx;
                     feedbackEl.textContent = correctMessages[idx];
                     feedbackEl.className = "feedback correct";
                     playAudio(correctAudio[idx]);
                 } else if (delta < 0) {
-                    const idx = randomIndex(wrongMessages);
+                    const idx = randomIndex(wrongMessages, lastWrongIndex);
+                    lastWrongIndex = idx;
                     feedbackEl.textContent = wrongMessages[idx];
                     feedbackEl.className = "feedback wrong";
                     playAudio(wrongAudio[idx]);
@@ -466,4 +484,3 @@
 </body>
 
 </html>
-
